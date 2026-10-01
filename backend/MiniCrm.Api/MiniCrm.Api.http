@@ -1,0 +1,54 @@
+@baseUrl = http://localhost:5080
+@clienteId = 1
+
+### Listar clientes (sin fecha de contacto, al final)
+GET {{baseUrl}}/api/clientes
+
+### Buscar por nombre, CUIT o teléfono
+GET {{baseUrl}}/api/clientes?busqueda=Comercio
+
+### Filtrar interesados y ordenar por próximo contacto descendente
+GET {{baseUrl}}/api/clientes?estado=3&orden=desc
+
+### Consultar detalle (cambiar clienteId por el ID creado)
+GET {{baseUrl}}/api/clientes/{{clienteId}}
+
+### Crear cliente (repetir este pedido devuelve 409)
+POST {{baseUrl}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombre": "Comercio de prueba",
+  "cuit": "30-12345678-9",
+  "telefono": "3815551234",
+  "email": "comercio@example.com",
+  "estado": 1,
+  "asesor": "Facundo"
+}
+
+### Editar cliente (mantiene su historial y próximo contacto)
+PUT {{baseUrl}}/api/clientes/{{clienteId}}
+Content-Type: application/json
+
+{
+  "nombre": "Comercio actualizado",
+  "cuit": "30123456789",
+  "telefono": "3815559876",
+  "email": "comercio@example.com",
+  "estado": 2,
+  "asesor": "Facundo"
+}
+
+### Validaciones: devuelve 400 con mensajes por campo
+POST {{baseUrl}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "cuit": "",
+  "email": "correo-invalido",
+  "estado": 99
+}
+
+### Cliente inexistente: devuelve 404
+GET {{baseUrl}}/api/clientes/2147483647
