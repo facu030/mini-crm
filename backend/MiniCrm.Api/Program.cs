@@ -1,4 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using MiniCrm.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<MiniCrmContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("MiniCrm")));
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>

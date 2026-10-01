@@ -1,7 +1,6 @@
 # Mini CRM
 
 Prueba técnica de seguimiento comercial con ASP.NET Core 8 y React.
-Esta primera rama contiene la estructura y la configuración inicial.
 
 ## Organización
 
@@ -21,13 +20,28 @@ Esta primera rama contiene la estructura y la configuración inicial.
 
 ```bash
 cd backend
+dotnet tool restore
 dotnet restore
 dotnet build
-dotnet run --project MiniCrm.Api
+cd MiniCrm.Api
+dotnet ef database update --project ../MiniCrm.Data --startup-project .
+dotnet run
 ```
 
 La API se ejecuta en `http://localhost:5080`. Todavía no hay endpoints de negocio.
-El contexto, las migraciones y los datos iniciales se incorporarán con el modelo.
+
+La conexión está en `MiniCrm.Api/appsettings.json`, en `ConnectionStrings:MiniCrm`.
+SQLite crea el archivo local `MiniCrm.Api/mini-crm.db`, que no se versiona.
+Ejecutar los comandos de base de datos desde `MiniCrm.Api` mantiene esa ubicación.
+Las migraciones se guardan en `MiniCrm.Data/Migrations`.
+
+## Modelo de datos
+
+- Un cliente tiene varias gestiones. El asesor se guarda como texto.
+- Los identificadores son enteros generados por SQLite.
+- El CUIT se guarda como texto y tiene un índice único.
+- `ProximoContacto` usa `DateOnly`, porque representa una fecha sin hora.
+- Las fechas de creación, actualización y gestión usan `DateTime` en UTC.
 
 ## Frontend
 
@@ -52,11 +66,10 @@ npm run build
 
 ## Estado
 
-Estructura inicial preparada. Pendientes: clientes, gestiones, historial, resumen,
-validaciones, persistencia, seed y pruebas de negocio.
+Preparados: estructura, entidades, enumeraciones, contexto y migración inicial.
+Pendientes: endpoints y reglas de clientes y gestiones, historial, resumen,
+validaciones de la API, pantallas, seed y prueba automatizada de negocio.
 
 ## Uso de IA
 
-ChatGPT/Codex asistió en la estructura y configuración inicial siguiendo las
-decisiones de alcance y arquitectura del candidato. Los repositorios de referencia
-se usaron para consultar su organización, sin trasladar funcionalidades.
+ChatGPT asistió en la estructura, el modelo y la configuración de persistencia.
