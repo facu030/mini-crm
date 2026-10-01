@@ -14,6 +14,8 @@ builder.Services.AddDbContext<MiniCrmContext>(options =>
 
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IGestionRepository, GestionRepository>();
+builder.Services.AddScoped<IGestionService, GestionService>();
 
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 {
