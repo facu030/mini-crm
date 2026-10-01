@@ -52,3 +52,40 @@ Content-Type: application/json
 
 ### Cliente inexistente: devuelve 404
 GET {{baseUrl}}/api/clientes/2147483647
+
+### Historial de gestiones del cliente
+GET {{baseUrl}}/api/clientes/{{clienteId}}/gestiones
+
+### Registrar gestión con próximo contacto (ajustar la fecha de ejemplo)
+POST {{baseUrl}}/api/clientes/{{clienteId}}/gestiones
+Content-Type: application/json
+
+{
+  "tipoContacto": 1,
+  "comentario": "Primera llamada al comercio",
+  "estadoResultante": 2,
+  "proximoContacto": "2026-10-03"
+}
+
+### Otra gestión sin fecha: mantiene el próximo contacto del cliente
+POST {{baseUrl}}/api/clientes/{{clienteId}}/gestiones
+Content-Type: application/json
+
+{
+  "tipoContacto": 2,
+  "comentario": "El comercio mostró interés por WhatsApp",
+  "estadoResultante": 3
+}
+
+### Gestión inválida: devuelve 400 con mensajes por campo
+POST {{baseUrl}}/api/clientes/{{clienteId}}/gestiones
+Content-Type: application/json
+
+{
+  "tipoContacto": 99,
+  "comentario": " ",
+  "estadoResultante": 99
+}
+
+### Historial de un cliente inexistente: devuelve 404
+GET {{baseUrl}}/api/clientes/2147483647/gestiones

@@ -77,6 +77,32 @@ incluyen `errors` con mensajes por campo.
 Para probar la API, abrir `backend/MiniCrm.Api/MiniCrm.Api.http` en Visual Studio
 con la API ejecutándose. Crear un cliente y ajustar `clienteId` al ID recibido.
 
+## API de gestiones
+
+| Método | Ruta | Operación |
+| --- | --- | --- |
+| GET | `/api/clientes/{id}/gestiones` | Consultar el historial completo, del más reciente al más antiguo. |
+| POST | `/api/clientes/{id}/gestiones` | Registrar una gestión y devolver `201` con sus datos. |
+
+El tipo de contacto, comentario y estado resultante son obligatorios. Tipos:
+`1` Llamada, `2` WhatsApp, `3` Correo, `4` Reunión y `5` Otro. Los estados
+usan los mismos valores que los clientes. La fecha y hora se generan en el
+backend en UTC. El próximo contacto es opcional y utiliza `AAAA-MM-DD`.
+
+Al registrar se actualizan el estado y la fecha de actualización del cliente.
+Si se informa un próximo contacto, reemplaza la fecha anterior; si se omite
+o se envía `null`, el cliente conserva la fecha que tenía. Las gestiones
+anteriores se mantienen. El registro de la gestión y la actualización del
+cliente se guardan juntos, en una sola llamada a `SaveChangesAsync`.
+
+El historial contiene solo las gestiones del cliente solicitado. Si dos
+gestiones tienen la misma fecha y hora, se ordenan por ID descendente.
+Un cliente existente sin gestiones devuelve `[]`; uno inexistente devuelve
+`404`. Los datos inválidos devuelven `400` con mensajes por campo.
+
+Los ejemplos para registrar y consultar gestiones están en el mismo archivo
+`MiniCrm.Api.http`. Este bloque utiliza las tablas y la migración existentes.
+
 ## Pruebas
 
 Desde `backend`:
@@ -87,7 +113,9 @@ dotnet test
 
 Las pruebas usan xUnit y SQLite en memoria con la migración real. Comprueban
 CUIT único, validaciones, edición sin perder historial, búsquedas, filtros,
-orden y seguimientos vencidos. No modifican la base de datos de la aplicación.
+orden y seguimientos vencidos. También comprueban el registro e historial de
+gestiones y que, si falla el guardado, no quede el cliente actualizado sin su
+gestión. No modifican la base de datos de la aplicación.
 
 ## Frontend
 
@@ -114,20 +142,23 @@ npm run build
 
 Completados: estructura, modelo y migración inicial; alta, edición, listado
 y detalle de clientes; búsqueda, filtro por estado, orden por próximo contacto,
-validaciones, errores controlados y pruebas de negocio.
+validaciones, errores controlados y pruebas de negocio; registro e historial
+de gestiones con actualización del cliente.
 
-Pendientes: registro e historial de gestiones, resumen, pantallas y seed.
-
+Pendientes: resumen, pantallas y seed.
 
 ## Uso de IA
+
 Utilicé ChatGPT (Codex) como herramienta de apoyo para:
+
 - Redactar y actualizar este README.
 - Definir la organización de carpetas y capas a partir de proyectos anteriores.
-- Asistir en la implementación del modelo de datos y de la API de clientes.
+- Asistir en la implementación del modelo de datos y de las API de clientes y gestiones.
 - Guiarme en la generación y aplicación de la migración inicial y en la
   creación de la base de datos SQLite, siguiendo mis indicaciones.
 - Generar las pruebas automatizadas de negocio.
 - Generar el archivo MiniCrm.Api.http para probar la API.
+
 Definí el alcance y las tecnologías, y revisé las decisiones de organización
 y funcionamiento durante el desarrollo. Las pruebas automatizadas y el archivo
 .http fueron generados por la herramienta; no los escribí manualmente.
