@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniCrm.Domain", "MiniCrm.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniCrm.Data", "MiniCrm.Data\MiniCrm.Data.csproj", "{21F87EFA-5E67-4BBE-99A8-9B3A8A1F2D04}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F0763FD3-0F50-46EA-B78E-E39213634B21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniCrm.Tests", "tests\MiniCrm.Tests\MiniCrm.Tests.csproj", "{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +36,15 @@ Global
 		{21F87EFA-5E67-4BBE-99A8-9B3A8A1F2D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21F87EFA-5E67-4BBE-99A8-9B3A8A1F2D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21F87EFA-5E67-4BBE-99A8-9B3A8A1F2D04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0FEBD5AC-F38A-41B2-A713-3CA790C4DEC1} = {F0763FD3-0F50-46EA-B78E-E39213634B21}
 	EndGlobalSection
 EndGlobal

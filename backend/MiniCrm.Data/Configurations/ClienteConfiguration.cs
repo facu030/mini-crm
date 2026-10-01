@@ -15,7 +15,6 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.Property(cliente => cliente.Cuit).IsRequired();
         builder.HasIndex(cliente => cliente.Cuit).IsUnique();
 
-        // SQLite no conserva la marca UTC de DateTime al leer las fechas.
         builder.Property(cliente => cliente.FechaCreacion)
             .HasConversion(fecha => fecha, fecha => DateTime.SpecifyKind(fecha, DateTimeKind.Utc));
         builder.Property(cliente => cliente.FechaActualizacion)
