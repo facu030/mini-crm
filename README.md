@@ -2,6 +2,10 @@
 
 Prueba técnica de seguimiento comercial con ASP.NET Core 8 y React.
 
+El backend y los datos de ejemplo están implementados. El frontend permite
+consultar, crear y editar clientes, ver el resumen general y acceder al detalle
+de cada cliente para registrar gestiones y consultar su historial completo.
+
 ## Organización
 
 - `backend/MiniCrm.Api`: endpoints y configuración HTTP.
@@ -29,6 +33,10 @@ dotnet run
 ```
 
 La API se ejecuta en `http://localhost:5080`.
+
+Mantener una sola instancia de la API ejecutándose. Si se inicia desde la
+terminal, Visual Studio puede usarse para enviar las solicitudes de
+`MiniCrm.Api.http`. Para detener la API de la terminal, presionar `Ctrl+C`.
 
 La conexión está en `MiniCrm.Api/appsettings.json`, en `ConnectionStrings:MiniCrm`.
 SQLite crea el archivo local `MiniCrm.Api/mini-crm.db`, que no se versiona.
@@ -91,8 +99,9 @@ fecha quedan al final. Ejemplo: `/api/clientes?estado=3&orden=desc`.
 Estados: `1` Prospecto, `2` Contactado, `3` Interesado, `4` No interesado,
 `5` Cliente. Si no se informa el estado al crear, se utiliza Prospecto.
 
-El nombre y el CUIT son obligatorios. Se valida el estado y, si se informa,
-el formato del correo. El CUIT se guarda sin guiones ni espacios para evitar
+El nombre y el CUIT son obligatorios. El CUIT debe tener 11 dígitos numéricos.
+Se valida el estado y, si se informa, el formato del correo. El CUIT se guarda
+sin guiones ni espacios para evitar
 duplicados por diferencias de formato; no se verifica su dígito de control.
 La edición permite conservar el propio CUIT, pero no usar el de otro cliente.
 Teléfono, correo y asesor vacíos se guardan como `null`.
@@ -159,7 +168,7 @@ dotnet test
 ```
 
 Las pruebas usan xUnit y SQLite en memoria con la migración real. Comprueban
-CUIT único, validaciones, edición sin perder historial, búsquedas, filtros,
+CUIT único y de 11 dígitos numéricos, validaciones, edición sin perder historial, búsquedas, filtros,
 orden y seguimientos vencidos. También comprueban el registro e historial de
 gestiones y que, si falla el guardado, no quede el cliente actualizado sin su
 gestión. Las pruebas del resumen comprueban los contadores, los límites de
@@ -169,19 +178,139 @@ existentes. No modifican la base de datos de la aplicación.
 
 ## Frontend
 
+Se utiliza JavaScript, React, Tailwind CSS y Axios. SweetAlert2 se utiliza
+para confirmar el guardado y mostrar mensajes de éxito. En una segunda terminal,
+desde la raíz del proyecto:
+
 ```bash
 cd frontend
 npm ci
-```
-
-Copiar `.env.example` como `.env` y ejecutar:
-
-```bash
+cp .env.example .env
 npm run dev
 ```
 
-La aplicación se ejecuta en `http://localhost:5173`.
-`VITE_API_URL` configura la URL base de la API.
+La aplicación se ejecuta en `http://localhost:5173`. El comando `cp` funciona
+en Git Bash; también se puede copiar `.env.example` y nombrar la copia `.env`.
+`VITE_API_URL` configura la URL base de la API; por defecto es
+`http://localhost:5080/api`. Reiniciar Vite si se cambia esa variable.
+
+Mantener la API en ejecución en la primera terminal. Si ya está configurada,
+para iniciarla desde la raíz del proyecto:
+
+```bash
+cd backend/MiniCrm.Api
+dotnet run
+```
+
+El puerto del frontend es fijo para coincidir con la configuración de CORS
+de la API. Si el puerto `5173` está ocupado, detener la instancia anterior.
+
+### Organización por funcionalidades
+
+- `src/modules/clientes/pages`: pantallas y estado del listado y del detalle.
+- `src/modules/clientes/components`: filtros, tabla, etiqueta de estado y
+  datos del cliente; formulario compartido para alta y edición.
+- `src/modules/clientes/services`: solicitudes de clientes con Axios.
+- `src/modules/clientes/constants`: estados y filtros iniciales.
+- `src/modules/gestiones`: formulario, historial, tipos de contacto y solicitudes
+  de gestiones con Axios.
+- `src/modules/dashboard`: componente del resumen y su solicitud a la API.
+- `src/modules/shared`: instancia de Axios, botones, campos de formulario, mensajes y funciones
+  para mostrar fechas y errores.
+
+`App` contiene la estructura visual y muestra la pantalla de clientes.
+Los componentes reciben los datos y acciones mediante props. Se utilizan
+`useState` y `useEffect` para el estado y la carga de datos.
+La navegación entre listado, formulario y detalle se resuelve con estado local
+en la pantalla de clientes.
+
+### Pantalla de clientes
+
+La tabla muestra nombre o razón social, CUIT, teléfono, correo, estado,
+asesor, próximo contacto y última actualización. Los seguimientos vencidos
+se resaltan y muestran el texto `Vencido`, usando el valor calculado por la API.
+
+Para buscar, escribir un nombre, CUIT o teléfono; opcionalmente seleccionar
+un estado y el orden del próximo contacto, y presionar `Buscar` o Enter.
+`Limpiar` restaura todos los estados y el orden ascendente. `Actualizar`
+vuelve a consultar con los filtros aplicados. Las búsquedas, filtros y orden
+se resuelven en el backend; los clientes sin próximo contacto quedan al final.
+
+El resumen muestra total de clientes, prospectos, interesados y seguimientos
+vencidos de toda la base. Filtrar la tabla no cambia esos totales generales.
+
+La pantalla informa cuando está cargando, cuando no hay clientes o resultados,
+y cuando ocurre un error. Permite reintentar una consulta fallida. Si cambia
+la consulta, se cancela la anterior para evitar que una respuesta vieja
+reemplace los resultados actuales. La tabla permite desplazamiento horizontal
+cuando no entra completa en la pantalla.
+
+Las fechas de próximo contacto se muestran como `DD/MM/AAAA`, conservando
+el día recibido. Las fechas con hora se muestran en la zona horaria del navegador.
+
+### Alta y edición de clientes
+
+`Nuevo cliente` abre un formulario vacío con estado Prospecto. `Editar`, en
+cada fila, abre el mismo formulario con los datos actuales del cliente. Incluye
+nombre, CUIT, teléfono, correo, estado y asesor responsable.
+
+Se validan nombre y CUIT obligatorios, CUIT de 11 dígitos numéricos después
+de quitar guiones y espacios, y el formato del correo si se informa.
+El selector permite los cinco estados definidos. El backend vuelve a validar
+los datos y controla que el CUIT no pertenezca a otro cliente. Los mensajes de
+validación se muestran junto al campo; los errores de conexión y guardado se
+muestran en el formulario, conservando lo que se escribió.
+Los errores de campo se mantienen mientras no se corrijan, aunque se edite
+otro campo o se vuelva a enviar el formulario. El CUIT duplicado se muestra
+solo junto al CUIT y se conserva mientras ese valor no cambie.
+
+SweetAlert2 pide confirmación antes de enviar el alta o la edición. Cancelar
+esa confirmación conserva el formulario y no envía la solicitud. Durante el
+guardado se deshabilitan los campos y botones para evitar envíos repetidos.
+Después de guardar se muestra un mensaje de éxito, se vuelve al listado y
+se consultan nuevamente la tabla y el resumen, conservando los filtros aplicados.
+El botón `Cancelar` del formulario vuelve al listado sin guardar.
+
+La edición envía solo los datos del cliente. El historial y el próximo contacto
+se conservan en el backend, según las reglas ya implementadas.
+
+### Detalle y gestiones
+
+`Ver detalle`, en cada fila, abre los datos del cliente, el formulario de nueva
+gestión y su historial completo. Se muestran estado actual, asesor, próximo
+contacto, fecha de creación y última actualización. Si el seguimiento está
+vencido, se identifica con el texto `Vencido`.
+
+El formulario permite elegir Llamada, WhatsApp, Correo, Reunión u Otro,
+escribir un comentario, seleccionar el estado resultante e informar una fecha
+opcional de próximo contacto. El comentario es obligatorio y los selectores
+usan los valores permitidos por la API. La fecha y hora de la gestión se
+generan en el backend. Dejar vacía la próxima fecha conserva la fecha actual
+del cliente; no la borra.
+
+SweetAlert2 pide confirmación antes del registro y muestra el mensaje de éxito.
+Mientras se procesa, se deshabilitan el formulario y el botón para volver al
+listado. Cancelar la confirmación conserva lo escrito. Si falla el registro,
+se conservan los datos y se muestran los errores junto a los campos o un
+mensaje general cuando corresponda.
+
+Después de registrar se vuelven a consultar el cliente y el historial para
+mostrar su estado, próxima fecha y última actualización. El formulario queda
+vacío para una nueva gestión, con el estado actual seleccionado. El historial
+incluye fecha y hora, tipo, comentario, estado resultante y próximo contacto,
+en el orden de más reciente a más antiguo que devuelve la API. Las gestiones
+anteriores permanecen visibles. Si aún no hay gestiones, se informa claramente.
+
+La carga del detalle tiene mensajes de carga, error y reintento. `Volver al
+listado` actualiza la tabla y los contadores, conservando los filtros aplicados.
+
+Para verificar este recorrido: abrir un cliente, registrar una gestión con
+nuevo estado y próxima fecha, comprobar el detalle y la primera fila del
+historial, y volver al listado para revisar la tabla y el resumen. Registrar
+otra gestión sin próxima fecha permite comprobar que se conserva la anterior
+y que ambas gestiones aparecen en el historial.
+
+Para verificar el frontend, desde `frontend`:
 
 ```bash
 npm run lint
@@ -190,13 +319,19 @@ npm run build
 
 ## Estado
 
-Completados: estructura, modelo y migración inicial; alta, edición, listado
+Completados en el backend: estructura, modelo y migración inicial; alta, edición, listado
 y detalle de clientes; búsqueda, filtro por estado, orden por próximo contacto,
 validaciones, errores controlados y pruebas de negocio; registro e historial
 de gestiones con actualización del cliente; resumen general de los cuatro
 indicadores; datos iniciales de ejemplo.
 
-Pendientes: pantallas e integración del frontend.
+Completados en el frontend: pantalla principal integrada con la API, listado
+de clientes, búsqueda por nombre/CUIT/teléfono, filtro por estado, orden por
+próximo contacto, identificación de vencidos, resumen general y mensajes de
+carga, error y ausencia de resultados; alta y edición con un formulario
+reutilizable, validaciones, confirmación y mensajes de éxito; detalle del
+cliente, registro de gestiones e historial completo, con actualización del
+cliente y del resumen.
 
 ## Uso de IA
 
@@ -211,6 +346,9 @@ Utilicé ChatGPT (Codex) como herramienta de apoyo para:
   creación de la base de datos SQLite, siguiendo mis indicaciones.
 - Generar las pruebas automatizadas de negocio.
 - Generar el archivo MiniCrm.Api.http para probar la API.
+- Generar los bloques de listado, alta, edición y detalle de clientes, registro
+  e historial de gestiones del frontend, con componentes por funcionalidad
+  y componentes compartidos, siguiendo el alcance y las tecnologías que indiqué.
 
 Definí el alcance y las tecnologías, y revisé las decisiones de organización
 y funcionamiento durante el desarrollo. Las pruebas automatizadas y el archivo

@@ -84,11 +84,14 @@ public class ClienteService : IClienteService
     private static void Validar(ClienteRequest request)
     {
         var errores = new Dictionary<string, string[]>();
+        var cuit = NormalizarCuit(request.Cuit ?? string.Empty);
 
         if (string.IsNullOrWhiteSpace(request.Nombre))
             errores["nombre"] = ["El nombre es obligatorio."];
-        if (string.IsNullOrWhiteSpace(request.Cuit) || NormalizarCuit(request.Cuit).Length == 0)
+        if (cuit.Length == 0)
             errores["cuit"] = ["El CUIT es obligatorio."];
+        else if (cuit.Length != 11 || cuit.Any(caracter => caracter < '0' || caracter > '9'))
+            errores["cuit"] = ["El CUIT debe tener 11 dígitos numéricos."];
         if (!Enum.IsDefined(request.Estado))
             errores["estado"] = ["El estado no es válido."];
 
