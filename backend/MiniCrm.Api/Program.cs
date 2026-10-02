@@ -5,6 +5,7 @@ using MiniCrm.Application.Interfaces;
 using MiniCrm.Application.Services;
 using MiniCrm.Data;
 using MiniCrm.Data.Repositories;
+using MiniCrm.Data.Seeds;
 using MiniCrm.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<MiniCrmContext>();
+    await DatosIniciales.CargarAsync(context);
+}
 
 app.UseCors("Frontend");
 app.UseMiddleware<ExceptionMiddleware>();

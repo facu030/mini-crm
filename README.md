@@ -35,6 +35,38 @@ SQLite crea el archivo local `MiniCrm.Api/mini-crm.db`, que no se versiona.
 Ejecutar los comandos de base de datos desde `MiniCrm.Api` mantiene esa ubicación.
 Las migraciones se guardan en `MiniCrm.Data/Migrations`.
 
+## Datos de ejemplo
+
+Después de aplicar la migración, al iniciar la API en modo `Development`
+se cargan automáticamente cinco clientes ficticios y cinco gestiones, solo
+si no hay ningún cliente. El perfil de ejecución incluido usa ese modo.
+Si la base ya contiene clientes, se conserva completa, sin agregar ejemplos
+ni restablecer cambios. Reiniciar la API tampoco duplica los datos.
+
+| Cliente | Estado inicial | Próximo contacto | Gestiones |
+| --- | --- | --- | --- |
+| Almacén Norte | Prospecto | Sin fecha | 0 |
+| Ferretería Centro | Contactado | Ayer | 1 |
+| Librería Sur | Interesado | Hace dos días | 2 |
+| Tienda Oeste | No interesado | Sin fecha | 1 |
+| Panadería Este | Cliente | Dentro de tres días | 1 |
+
+Las fechas se calculan al cargar los ejemplos. El resumen inicial devuelve
+`totalClientes: 5`, `prospectos: 1`, `interesados: 1` y `seguimientosVencidos: 2`.
+La Librería conserva el próximo contacto del correo anterior, porque su
+última gestión por WhatsApp no informa una nueva fecha.
+
+Para probar los ejemplos sin tocar una base existente, detener la API y,
+desde `backend/MiniCrm.Api`, usar otra base local. En Git Bash:
+
+```bash
+ConnectionStrings__MiniCrm="Data Source=mini-crm-demo.db" dotnet ef database update --project ../MiniCrm.Data --startup-project .
+ConnectionStrings__MiniCrm="Data Source=mini-crm-demo.db" dotnet run
+```
+
+Estos comandos usan `mini-crm-demo.db`; al ejecutar normalmente se vuelve
+a la conexión de `appsettings.json`. No se versionan las bases de datos.
+
 ## Modelo de datos
 
 - Un cliente tiene varias gestiones. El asesor se guarda como texto.
@@ -131,8 +163,9 @@ CUIT único, validaciones, edición sin perder historial, búsquedas, filtros,
 orden y seguimientos vencidos. También comprueban el registro e historial de
 gestiones y que, si falla el guardado, no quede el cliente actualizado sin su
 gestión. Las pruebas del resumen comprueban los contadores, los límites de
-fecha y los cambios de estado producidos por gestiones. No modifican la base
-de datos de la aplicación.
+fecha y los cambios de estado producidos por gestiones. Las pruebas de datos
+iniciales comprueban su coherencia y que no se dupliquen ni alteren los datos
+existentes. No modifican la base de datos de la aplicación.
 
 ## Frontend
 
@@ -161,9 +194,9 @@ Completados: estructura, modelo y migración inicial; alta, edición, listado
 y detalle de clientes; búsqueda, filtro por estado, orden por próximo contacto,
 validaciones, errores controlados y pruebas de negocio; registro e historial
 de gestiones con actualización del cliente; resumen general de los cuatro
-indicadores.
+indicadores; datos iniciales de ejemplo.
 
-Pendientes: pantallas y seed.
+Pendientes: pantallas e integración del frontend.
 
 ## Uso de IA
 
@@ -173,6 +206,7 @@ Utilicé ChatGPT (Codex) como herramienta de apoyo para:
 - Definir la organización de carpetas y capas a partir de proyectos anteriores.
 - Asistir en la implementación del modelo de datos y de las API de clientes,
   gestiones y resumen general.
+- Generar la carga inicial de clientes y gestiones ficticios.
 - Guiarme en la generación y aplicación de la migración inicial y en la
   creación de la base de datos SQLite, siguiendo mis indicaciones.
 - Generar las pruebas automatizadas de negocio.
