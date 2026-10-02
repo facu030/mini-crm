@@ -33,11 +33,26 @@ public class ClienteRepository : IClienteRepository
         if (estado.HasValue)
             query = query.Where(cliente => cliente.Estado == estado.Value);
 
-        // Los clientes sin próximo contacto quedan al final en ambos órdenes.
+        // los clientes sin próximo contacto quedan al final en ambos órdenes
         var ordenada = query.OrderBy(cliente => cliente.ProximoContacto == null);
         return descendente
             ? await ordenada.ThenByDescending(cliente => cliente.ProximoContacto).ThenBy(cliente => cliente.Id).ToListAsync()
             : await ordenada.ThenBy(cliente => cliente.ProximoContacto).ThenBy(cliente => cliente.Id).ToListAsync();
+    }
+
+    public async Task<int> ContarAsync(EstadoCliente? estado = null)
+    {
+        var query = _context.Clientes.AsNoTracking();
+        if (estado.HasValue)
+            query = query.Where(cliente => cliente.Estado == estado.Value);
+
+        return await query.CountAsync();
+    }
+
+    public async Task<int> ContarSeguimientosVencidosAsync(DateOnly hoy)
+    {
+        return await _context.Clientes.CountAsync(cliente =>
+            cliente.ProximoContacto.HasValue && cliente.ProximoContacto.Value < hoy);
     }
 
     public async Task<Cliente?> ObtenerPorIdAsync(int id)
@@ -65,7 +80,6 @@ public class ClienteRepository : IClienteRepository
         catch (DbUpdateException exception) when (
             exception.InnerException is SqliteException { SqliteExtendedErrorCode: 2067 })
         {
-            // El índice único también evita duplicados entre solicitudes simultáneas.
             throw new CuitDuplicadoException();
         }
     }

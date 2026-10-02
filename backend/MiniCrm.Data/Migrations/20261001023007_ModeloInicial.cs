@@ -5,10 +5,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace MiniCrm.Data.Migrations
 {
-    /// <inheritdoc />
     public partial class ModeloInicial : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -68,7 +66,6 @@ namespace MiniCrm.Data.Migrations
                 column: "ClienteId");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
