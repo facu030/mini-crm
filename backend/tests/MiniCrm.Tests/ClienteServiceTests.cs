@@ -98,6 +98,10 @@ public class ClienteServiceTests : IAsyncLifetime
     [Theory]
     [InlineData(null, "30123456789", null, 1, "nombre")]
     [InlineData("Comercio", " - ", null, 1, "cuit")]
+    [InlineData("Comercio", "aaa", null, 1, "cuit")]
+    [InlineData("Comercio", "3012345678A", null, 1, "cuit")]
+    [InlineData("Comercio", "3012345678", null, 1, "cuit")]
+    [InlineData("Comercio", "301234567890", null, 1, "cuit")]
     [InlineData("Comercio", "30123456789", "correo-invalido", 1, "email")]
     [InlineData("Comercio", "30123456789", null, 99, "estado")]
     public async Task Crear_ValidaDatosAntesDeGuardar(string? nombre, string? cuit, string? email, int estado, string campo)
@@ -108,6 +112,22 @@ public class ClienteServiceTests : IAsyncLifetime
 
         Assert.Contains(campo, error.Errores.Keys);
         Assert.Equal(0, await _context.Clientes.CountAsync());
+    }
+
+    [Fact]
+    public async Task Editar_RechazaCuitConLetrasYConservaLosDatos()
+    {
+        var cliente = await _service.CrearAsync(Datos("30123456789"));
+        var datos = Datos("3012345678A");
+        datos.Nombre = "Nombre que no debe guardarse";
+
+        var error = await Assert.ThrowsAsync<DatosInvalidosException>(() => _service.EditarAsync(cliente.Id, datos));
+
+        Assert.Contains("cuit", error.Errores.Keys);
+        _context.ChangeTracker.Clear();
+        var conservado = await _service.ObtenerPorIdAsync(cliente.Id);
+        Assert.Equal(cliente.Cuit, conservado.Cuit);
+        Assert.Equal(cliente.Nombre, conservado.Nombre);
     }
 
     [Theory]
