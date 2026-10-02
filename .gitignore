@@ -1,5 +1,6 @@
 **/bin/
 **/obj/
+*.dll
 **/node_modules/
 **/dist/
 .vs/

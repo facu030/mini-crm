@@ -17,8 +17,20 @@ de cada cliente para registrar gestiones y consultar su historial completo.
 
 ## Requisitos
 
+- Git para clonar el repositorio.
 - SDK de .NET 8.
 - Node.js 22.13 o superior de la rama 22, o Node.js 24 y npm.
+
+## Obtener el proyecto
+
+```bash
+git clone https://github.com/facu030/mini-crm.git
+cd mini-crm
+```
+
+Los comandos del backend parten de esta raíz. Para el frontend, abrir una
+segunda terminal en la misma raíz y seguir su sección. Se necesita conexión
+a Internet para descargar las dependencias de NuGet y npm la primera vez.
 
 ## Backend
 
@@ -83,6 +95,10 @@ a la conexión de `appsettings.json`. No se versionan las bases de datos.
 - `ProximoContacto` usa `DateOnly`, porque representa una fecha sin hora.
 - Las fechas de creación, actualización y gestión usan `DateTime` en UTC.
 
+El alta guarda el estado inicial del cliente. El alta y la edición de sus datos
+no crean una gestión: el historial comienza al registrar un contacto con su
+tipo, comentario y estado resultante desde el detalle.
+
 ## API de clientes
 
 | Método | Ruta | Operación |
@@ -116,7 +132,20 @@ cliente inexistente y `409` para CUIT duplicado. Los errores de validación
 incluyen `errors` con mensajes por campo.
 
 Para probar la API, abrir `backend/MiniCrm.Api/MiniCrm.Api.http` en Visual Studio
-con la API ejecutándose. Crear un cliente y ajustar `clienteId` al ID recibido.
+con la API ejecutándose y enviar las solicitudes de cada bloque. El archivo
+incluye listado, detalle, alta, edición, gestiones, historial, resumen y ejemplos
+de validación y cliente inexistente. Repetir el alta de ejemplo permite probar
+el rechazo del CUIT duplicado. Al crear un cliente, ajustar `clienteId` al ID
+recibido para que las siguientes solicitudes trabajen sobre ese cliente.
+
+También se puede comprobar el arranque desde una terminal:
+
+```bash
+curl http://localhost:5080/api/dashboard/resumen
+```
+
+En una base nueva, después del seed, debe devolver los cuatro valores indicados
+en la sección de datos de ejemplo.
 
 ## API de gestiones
 
@@ -333,6 +362,9 @@ reutilizable, validaciones, confirmación y mensajes de éxito; detalle del
 cliente, registro de gestiones e historial completo, con actualización del
 cliente y del resumen.
 
+Funcionalidades obligatorias pendientes: ninguna. Las mejoras opcionales del
+enunciado se dejaron fuera del alcance de esta entrega.
+
 ## Uso de IA
 
 Utilicé ChatGPT (Codex) como herramienta de apoyo para:
@@ -351,5 +383,7 @@ Utilicé ChatGPT (Codex) como herramienta de apoyo para:
   y componentes compartidos, siguiendo el alcance y las tecnologías que indiqué.
 
 Definí el alcance y las tecnologías, y revisé las decisiones de organización
-y funcionamiento durante el desarrollo. Las pruebas automatizadas y el archivo
-.http fueron generados por la herramienta; no los escribí manualmente.
+y funcionamiento durante el desarrollo. Probé los flujos localmente y pedí
+ajustes para conservar los errores por campo y rechazar CUIT con letras.
+Las pruebas automatizadas y el archivo .http fueron generados por la
+herramienta; no los escribí manualmente.
