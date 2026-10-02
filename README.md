@@ -103,6 +103,21 @@ Un cliente existente sin gestiones devuelve `[]`; uno inexistente devuelve
 Los ejemplos para registrar y consultar gestiones están en el mismo archivo
 `MiniCrm.Api.http`. Este bloque utiliza las tablas y la migración existentes.
 
+## API de resumen
+
+`GET /api/dashboard/resumen` devuelve `200` con cuatro contadores:
+
+- `totalClientes`: todos los clientes registrados.
+- `prospectos`: clientes cuyo estado actual es Prospecto.
+- `interesados`: clientes cuyo estado actual es Interesado.
+- `seguimientosVencidos`: clientes con próximo contacto anterior a hoy.
+
+Hoy y las fechas futuras no están vencidas; los clientes sin fecha tampoco.
+Se usa el día actual del servidor, igual que en el listado de clientes.
+Los contadores se calculan sobre los clientes, aunque tengan varias gestiones,
+y reflejan el estado actual. Si no hay clientes, todos los valores son `0`.
+El ejemplo de consulta está al final de `MiniCrm.Api.http`.
+
 ## Pruebas
 
 Desde `backend`:
@@ -115,7 +130,9 @@ Las pruebas usan xUnit y SQLite en memoria con la migración real. Comprueban
 CUIT único, validaciones, edición sin perder historial, búsquedas, filtros,
 orden y seguimientos vencidos. También comprueban el registro e historial de
 gestiones y que, si falla el guardado, no quede el cliente actualizado sin su
-gestión. No modifican la base de datos de la aplicación.
+gestión. Las pruebas del resumen comprueban los contadores, los límites de
+fecha y los cambios de estado producidos por gestiones. No modifican la base
+de datos de la aplicación.
 
 ## Frontend
 
@@ -143,9 +160,10 @@ npm run build
 Completados: estructura, modelo y migración inicial; alta, edición, listado
 y detalle de clientes; búsqueda, filtro por estado, orden por próximo contacto,
 validaciones, errores controlados y pruebas de negocio; registro e historial
-de gestiones con actualización del cliente.
+de gestiones con actualización del cliente; resumen general de los cuatro
+indicadores.
 
-Pendientes: resumen, pantallas y seed.
+Pendientes: pantallas y seed.
 
 ## Uso de IA
 
@@ -153,7 +171,8 @@ Utilicé ChatGPT (Codex) como herramienta de apoyo para:
 
 - Redactar y actualizar este README.
 - Definir la organización de carpetas y capas a partir de proyectos anteriores.
-- Asistir en la implementación del modelo de datos y de las API de clientes y gestiones.
+- Asistir en la implementación del modelo de datos y de las API de clientes,
+  gestiones y resumen general.
 - Guiarme en la generación y aplicación de la migración inicial y en la
   creación de la base de datos SQLite, siguiendo mis indicaciones.
 - Generar las pruebas automatizadas de negocio.

@@ -46,7 +46,7 @@ public class GestionService : IGestionService
             cliente.ProximoContacto = request.ProximoContacto;
 
         await _gestionRepository.AgregarAsync(gestion);
-        // Los repositorios comparten el contexto: esta llamada guarda ambos cambios.
+
         await _gestionRepository.GuardarAsync();
 
         return Mapear(gestion);

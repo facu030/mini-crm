@@ -89,3 +89,6 @@ Content-Type: application/json
 
 ### Historial de un cliente inexistente: devuelve 404
 GET {{baseUrl}}/api/clientes/2147483647/gestiones
+
+### Resumen general: total, prospectos, interesados y seguimientos vencidos
+GET {{baseUrl}}/api/dashboard/resumen
